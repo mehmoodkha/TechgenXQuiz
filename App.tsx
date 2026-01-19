@@ -3,10 +3,10 @@ import React, { useState, useMemo } from 'react';
 import Layout from './components/Layout';
 import TopicCard from './components/TopicCard';
 import QuizView from './components/QuizView';
-import { TOPICS, INITIAL_QUESTIONS, TOPIC_ICONS } from './constants';
-import { Topic, Difficulty, SearchResult } from './types';
+import { TOPICS, INITIAL_QUESTIONS } from './constants';
 import { useProgress } from './hooks/useProgress';
-import { Search, Trophy, BarChart3, RotateCcw, Target } from 'lucide-react';
+import { Difficulty, Topic, Question } from './types';
+import { Search, Trophy, BookOpen, Clock } from 'lucide-react';
 
 const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'search' | 'profile'>('dashboard');
@@ -14,275 +14,206 @@ const App: React.FC = () => {
   const [selectedLevel, setSelectedLevel] = useState<Difficulty | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
 
-  const { progress, markCompleted, resetLevel, resetAll, getTopicProgress, getLevelProgress } = useProgress();
+  const { progress, markCompleted, getTopicProgress, getLevelProgress } = useProgress();
 
   const filteredQuestions = useMemo(() => {
     if (!selectedTopic || !selectedLevel) return [];
-    return INITIAL_QUESTIONS.filter(q => q.topicId === selectedTopic.id && q.difficulty === selectedLevel);
+    return INITIAL_QUESTIONS.filter(
+      q => q.topicId === selectedTopic.id && q.difficulty === selectedLevel
+    );
   }, [selectedTopic, selectedLevel]);
 
-  const searchResults: SearchResult[] = useMemo(() => {
+  const searchResults = useMemo(() => {
     if (!searchQuery.trim()) return [];
     const query = searchQuery.toLowerCase();
-    return INITIAL_QUESTIONS
-      .filter(q => q.question.toLowerCase().includes(query) || q.answer.toLowerCase().includes(query))
-      .map(q => ({
-        question: q,
-        topicName: TOPICS.find(t => t.id === q.topicId)?.name || 'Unknown'
-      }));
+    return INITIAL_QUESTIONS.filter(
+      q => q.question.toLowerCase().includes(query) || q.answer.toLowerCase().includes(query)
+    ).map(q => ({
+      question: q,
+      topicName: TOPICS.find(t => t.id === q.topicId)?.name || 'General'
+    }));
   }, [searchQuery]);
 
-  const handleTopicClick = (topic: Topic) => {
-    setSelectedTopic(topic);
-    setSelectedLevel(null);
-  };
-
-  const handleLevelSelect = (level: Difficulty) => {
-    setSelectedLevel(level);
-  };
-
-  const handleExitQuiz = () => {
-    setSelectedLevel(null);
-  };
-
-  const totalQuestionsAvailable = useMemo(() => {
-    const counts: Record<string, number> = {};
-    INITIAL_QUESTIONS.forEach(q => {
-      counts[q.topicId] = (counts[q.topicId] || 0) + 1;
-    });
-    return counts;
-  }, []);
-
-  const overallProgress = useMemo(() => {
-    const total = INITIAL_QUESTIONS.length;
-    let completed = 0;
-    Object.values(progress).forEach(topicData => {
-      Object.values(topicData).forEach(levelData => {
-        completed += levelData.completedQuestionIds.length;
-      });
-    });
-    return total > 0 ? Math.round((completed / total) * 100) : 0;
-  }, [progress]);
-
-  const renderDashboard = () => {
-    if (selectedTopic && !selectedLevel) {
-      return (
-        <div className="max-w-4xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
-          <button 
-            onClick={() => setSelectedTopic(null)}
-            className="mb-8 flex items-center gap-2 text-slate-400 hover:text-white transition-colors"
-          >
-            <RotateCcw size={16} />
-            Back to Overview
-          </button>
-          
-          <div className="flex items-center gap-6 mb-12">
-            <div className="w-20 h-20 rounded-3xl bg-slate-900 border border-slate-800 flex items-center justify-center text-emerald-500 shadow-xl">
-              <span className="scale-150">
-                {/* Fixed invalid 'require' by using imported TOPIC_ICONS directly */}
-                {TOPIC_ICONS[selectedTopic.id]}
-              </span>
-            </div>
-            <div>
-              <h1 className="text-4xl font-black mb-2 tracking-tight">{selectedTopic.name}</h1>
-              <p className="text-slate-400 max-w-lg">{selectedTopic.description}</p>
-            </div>
+  const renderDashboard = () => (
+    <div className="space-y-12 animate-in fade-in duration-700">
+      <section className="relative rounded-3xl bg-slate-900 border border-slate-800 p-8 md:p-12 overflow-hidden">
+        <div className="absolute top-0 right-0 w-1/3 h-full bg-emerald-500/5 blur-[100px] -mr-20" />
+        <div className="relative z-10">
+          <div className="flex items-center gap-3 text-emerald-500 font-bold text-sm uppercase tracking-widest mb-4">
+            <Trophy size={18} />
+            <span>DevOps Mastery Hub</span>
           </div>
-
-          <div className="grid md:grid-cols-3 gap-6">
-            {[Difficulty.BASIC, Difficulty.INTERMEDIATE, Difficulty.ADVANCED].map(level => {
-              const levelQuestions = INITIAL_QUESTIONS.filter(q => q.topicId === selectedTopic.id && q.difficulty === level);
-              const { completed, percentage } = getLevelProgress(selectedTopic.id, level, levelQuestions.length);
-              
-              return (
-                <div key={level} className="bg-slate-900 border border-slate-800 rounded-3xl p-6 flex flex-col">
-                  <div className="flex justify-between items-start mb-6">
-                    <div>
-                      <h3 className="text-xl font-bold mb-1">{level}</h3>
-                      <p className="text-xs text-slate-500 font-bold uppercase tracking-wider">{levelQuestions.length} Questions</p>
-                    </div>
-                    <div className="px-3 py-1 bg-emerald-500/10 text-emerald-500 rounded-full text-xs font-bold">
-                      {percentage}%
-                    </div>
-                  </div>
-
-                  <div className="mt-auto pt-6 space-y-4">
-                    <button 
-                      onClick={() => handleLevelSelect(level)}
-                      className="w-full py-3 bg-slate-800 hover:bg-slate-700 rounded-xl font-bold transition-all"
-                    >
-                      {percentage === 100 ? 'Review Questions' : 'Start Preparation'}
-                    </button>
-                    <button 
-                      onClick={() => resetLevel(selectedTopic.id, level)}
-                      className="w-full text-slate-500 hover:text-slate-300 text-xs transition-colors flex items-center justify-center gap-1"
-                    >
-                      <RotateCcw size={12} />
-                      Reset Progress
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
+          <h1 className="text-4xl md:text-6xl font-black mb-6 tracking-tighter leading-none">
+            Master the <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-sky-400">DevOps Lifecycle</span>
+          </h1>
+          <p className="text-slate-400 text-lg max-w-2xl leading-relaxed mb-8">
+            The ultimate preparation guide for SRE, Platform, and DevOps roles. 
+            Over 500 questions across the industry's most in-demand technologies.
+          </p>
+          <div className="flex flex-wrap gap-4">
+            <div className="bg-slate-950/50 px-4 py-2 rounded-xl border border-slate-800 flex items-center gap-2">
+              <BookOpen size={16} className="text-emerald-500" />
+              <span className="text-sm font-medium">9 Tech Stacks</span>
+            </div>
+            <div className="bg-slate-950/50 px-4 py-2 rounded-xl border border-slate-800 flex items-center gap-2">
+              <Clock size={16} className="text-sky-500" />
+              <span className="text-sm font-medium">Updated Weekly</span>
+            </div>
           </div>
         </div>
-      );
-    }
+      </section>
 
-    if (selectedTopic && selectedLevel) {
-      return (
-        <QuizView 
-          topic={selectedTopic} 
-          level={selectedLevel} 
-          questions={filteredQuestions}
-          onComplete={(id) => markCompleted(selectedTopic.id, selectedLevel, id)}
-          onExit={handleExitQuiz}
-          initialProgress={progress[selectedTopic.id]?.[selectedLevel]?.completedQuestionIds || []}
-        />
-      );
-    }
+      <div>
+        <div className="flex items-center justify-between mb-8">
+          <h2 className="text-2xl font-bold">Select Tech Stack</h2>
+          <span className="text-sm text-slate-500">{TOPICS.length} categories available</span>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {TOPICS.map(topic => (
+            <TopicCard 
+              key={topic.id} 
+              topic={topic} 
+              progress={getTopicProgress(topic.id, INITIAL_QUESTIONS.filter(q => q.topicId === topic.id).length)}
+              onClick={() => setSelectedTopic(topic)}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
 
+  const renderTopicDetail = () => {
+    if (!selectedTopic) return null;
+    const levels = [Difficulty.BASIC, Difficulty.INTERMEDIATE, Difficulty.ADVANCED];
+    
     return (
-      <div className="space-y-12 animate-in fade-in duration-700">
-        <section className="relative rounded-3xl overflow-hidden bg-slate-900 border border-slate-800 p-8 md:p-12">
-          <div className="absolute top-0 right-0 p-8 opacity-10">
-            <Trophy size={200} />
-          </div>
-          <div className="relative z-10 max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-xs font-bold uppercase tracking-widest mb-6">
-              <Target size={14} /> 
-              Learning Journey
-            </div>
-            <h1 className="text-4xl md:text-5xl font-black mb-4 tracking-tighter leading-tight">Master the <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-sky-400">DevOps Lifecycle</span></h1>
-            <p className="text-slate-400 text-lg mb-8">Systematic interview preparation across the most critical infrastructure and automation technologies.</p>
+      <div className="animate-in slide-in-from-right-4 duration-500">
+        <button 
+          onClick={() => setSelectedTopic(null)}
+          className="text-slate-400 hover:text-white mb-8 transition-colors flex items-center gap-2"
+        >
+          ← Back to Dashboard
+        </button>
+        
+        <div className="flex flex-col md:flex-row gap-12">
+          <div className="flex-1">
+            <h1 className="text-5xl font-black mb-4 tracking-tight">{selectedTopic.name}</h1>
+            <p className="text-xl text-slate-400 max-w-xl mb-12">{selectedTopic.description}</p>
             
-            <div className="flex flex-wrap items-center gap-8">
-              <div className="flex items-center gap-3">
-                <div className="h-12 w-12 rounded-2xl bg-slate-800 flex items-center justify-center">
-                  <BarChart3 className="text-emerald-400" />
-                </div>
-                <div>
-                  <div className="text-xl font-bold">{overallProgress}%</div>
-                  <div className="text-[10px] text-slate-500 font-bold uppercase">Overall Rank</div>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="h-12 w-12 rounded-2xl bg-slate-800 flex items-center justify-center">
-                  <Trophy className="text-amber-400" />
-                </div>
-                <div>
-                  <div className="text-xl font-bold">{TOPICS.length}</div>
-                  <div className="text-[10px] text-slate-500 font-bold uppercase">Total Topics</div>
+            <div className="space-y-4">
+              {levels.map(level => {
+                const total = INITIAL_QUESTIONS.filter(q => q.topicId === selectedTopic.id && q.difficulty === level).length;
+                const { completed, percentage } = getLevelProgress(selectedTopic.id, level, total);
+                
+                return (
+                  <button 
+                    key={level}
+                    onClick={() => setSelectedLevel(level)}
+                    className="w-full group bg-slate-900 border border-slate-800 rounded-2xl p-6 hover:border-emerald-500/50 transition-all text-left flex items-center justify-between"
+                  >
+                    <div>
+                      <h3 className="text-xl font-bold mb-1">{level}</h3>
+                      <p className="text-slate-500 text-sm">{completed} of {total} questions mastered</p>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <div className="text-right">
+                        <div className="text-lg font-bold text-emerald-500">{percentage}%</div>
+                        <div className="text-[10px] text-slate-600 uppercase font-black">Level Progress</div>
+                      </div>
+                      <div className="w-12 h-12 rounded-full border-4 border-slate-800 flex items-center justify-center group-hover:border-emerald-500/30 transition-all">
+                        <div className="w-full h-full rounded-full border-t-4 border-emerald-500 animate-spin-slow opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+          
+          <div className="w-full md:w-80 space-y-6">
+            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6">
+              <h4 className="font-bold mb-4">Topic Mastery</h4>
+              <div className="flex items-center justify-center py-8">
+                <div className="relative w-32 h-32">
+                  <svg className="w-full h-full transform -rotate-90">
+                    <circle cx="64" cy="64" r="58" stroke="currentColor" strokeWidth="8" fill="transparent" className="text-slate-800" />
+                    <circle cx="64" cy="64" r="58" stroke="currentColor" strokeWidth="8" fill="transparent" 
+                      strokeDasharray={364} 
+                      strokeDashoffset={364 - (364 * getTopicProgress(selectedTopic.id, INITIAL_QUESTIONS.filter(q => q.topicId === selectedTopic.id).length) / 100)} 
+                      className="text-emerald-500" 
+                    />
+                  </svg>
+                  <div className="absolute inset-0 flex items-center justify-center flex-col">
+                    <span className="text-2xl font-black">{getTopicProgress(selectedTopic.id, INITIAL_QUESTIONS.filter(q => q.topicId === selectedTopic.id).length)}%</span>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </section>
-
-        <section>
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-2xl font-black tracking-tight">Tech Stack Topics</h2>
-            <div className="text-slate-500 text-sm font-medium">9 specialized paths</div>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {TOPICS.map(topic => (
-              <TopicCard 
-                key={topic.id} 
-                topic={topic} 
-                progress={getTopicProgress(topic.id, totalQuestionsAvailable[topic.id] || 0)}
-                onClick={() => handleTopicClick(topic)}
-              />
-            ))}
-          </div>
-        </section>
+        </div>
       </div>
     );
   };
 
   const renderSearch = () => (
-    <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in duration-500">
       <div className="relative">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" />
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={24} />
         <input 
           type="text"
-          placeholder="Search for Docker, Terraform, SRE concepts..."
-          className="w-full h-16 bg-slate-900 border border-slate-800 rounded-2xl pl-12 pr-4 text-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all shadow-xl"
+          placeholder="Search for concepts (e.g. 'Kubernetes networking', 'DNS', 'Ansible playbooks')..."
+          className="w-full bg-slate-900 border-2 border-slate-800 rounded-2xl py-5 pl-14 pr-6 text-lg focus:outline-none focus:border-emerald-500 transition-all placeholder:text-slate-600"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
+          autoFocus
         />
       </div>
 
-      {searchQuery && (
-        <div className="space-y-4">
-          <h3 className="text-slate-400 font-bold uppercase text-xs tracking-widest">{searchResults.length} Results Found</h3>
-          {searchResults.length > 0 ? (
-            <div className="space-y-4">
-              {searchResults.map((res, idx) => (
-                <div key={idx} className="p-6 bg-slate-900 border border-slate-800 rounded-2xl hover:border-slate-700 transition-all cursor-pointer group">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 bg-slate-800 rounded text-slate-400">{res.topicName}</span>
-                    <span className="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 bg-emerald-500/10 rounded text-emerald-500">{res.question.difficulty}</span>
-                  </div>
-                  <h4 className="text-lg font-bold group-hover:text-emerald-400 transition-colors">{res.question.question}</h4>
+      <div className="space-y-4">
+        {searchQuery ? (
+          searchResults.length > 0 ? (
+            searchResults.map(({ question, topicName }, idx) => (
+              <div key={idx} className="bg-slate-900 border border-slate-800 rounded-2xl p-6 hover:border-slate-700 transition-all">
+                <div className="flex items-center gap-2 text-xs font-bold text-emerald-500 mb-2 uppercase tracking-widest">
+                  {topicName} • {question.difficulty}
                 </div>
-              ))}
-            </div>
+                <h3 className="text-lg font-bold mb-3">{question.question}</h3>
+                <p className="text-slate-400 text-sm line-clamp-2">{question.answer}</p>
+              </div>
+            ))
           ) : (
-            <div className="text-center py-20 text-slate-600">No matching questions found in the bank.</div>
-          )}
-        </div>
-      )}
-    </div>
-  );
-
-  const renderProfile = () => (
-    <div className="max-w-2xl mx-auto space-y-8 animate-in fade-in duration-500">
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl p-8 text-center">
-        <div className="w-24 h-24 rounded-full bg-emerald-500/20 mx-auto mb-6 flex items-center justify-center text-emerald-500">
-          <BarChart3 size={40} />
-        </div>
-        <h2 className="text-2xl font-black mb-2">Preparation Statistics</h2>
-        <p className="text-slate-400 mb-8">Track your journey across all interview domains</p>
-        
-        <div className="grid grid-cols-2 gap-4">
-          <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800">
-            <div className="text-3xl font-black text-emerald-400">{overallProgress}%</div>
-            <div className="text-[10px] font-bold uppercase text-slate-500 tracking-wider">Completion</div>
+            <div className="text-center py-20">
+              <p className="text-slate-500">No results found for "{searchQuery}"</p>
+            </div>
+          )
+        ) : (
+          <div className="text-center py-20 text-slate-500 space-y-4">
+            <Search size={48} className="mx-auto opacity-20" />
+            <p>Start typing to search across 500+ DevOps interview questions.</p>
           </div>
-          <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800">
-            <div className="text-3xl font-black text-amber-400">{Object.keys(progress).length}</div>
-            <div className="text-[10px] font-bold uppercase text-slate-500 tracking-wider">Topics Started</div>
-          </div>
-        </div>
-      </div>
-
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl p-8">
-        <h3 className="text-xl font-bold mb-6">Settings & Danger Zone</h3>
-        <div className="space-y-4">
-          <button 
-            onClick={resetAll}
-            className="w-full flex items-center justify-between p-4 bg-red-500/5 hover:bg-red-500/10 border border-red-500/20 rounded-2xl text-red-400 transition-all font-bold"
-          >
-            <span>Reset All Progress</span>
-            <RotateCcw size={18} />
-          </button>
-        </div>
+        )}
       </div>
     </div>
   );
-
-  const renderContent = () => {
-    switch (activeTab) {
-      case 'dashboard': return renderDashboard();
-      case 'search': return renderSearch();
-      case 'profile': return renderProfile();
-      default: return renderDashboard();
-    }
-  };
 
   return (
     <Layout activeTab={activeTab} setActiveTab={setActiveTab}>
-      {renderContent()}
+      {!selectedTopic ? (
+        activeTab === 'dashboard' ? renderDashboard() : 
+        activeTab === 'search' ? renderSearch() : 
+        <div className="text-center py-20">Profile view coming soon.</div>
+      ) : (
+        !selectedLevel ? renderTopicDetail() : (
+          <QuizView 
+            topic={selectedTopic}
+            level={selectedLevel}
+            questions={filteredQuestions}
+            onComplete={(id) => markCompleted(selectedTopic.id, selectedLevel, id)}
+            onExit={() => setSelectedLevel(null)}
+            initialProgress={progress[selectedTopic.id]?.[selectedLevel]?.completedQuestionIds || []}
+          />
+        )
+      )}
     </Layout>
   );
 };

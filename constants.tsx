@@ -37,101 +37,55 @@ export const TOPIC_ICONS: Record<string, React.ReactNode> = {
   python: <Code2 size={24} />,
 };
 
-// HELPER FOR GENERATING LARGE SETS
-const createQuestions = (topic: string, diff: Difficulty, count: number, startId: string): Question[] => {
+const generateMockQuestions = (topicId: string, diff: Difficulty, count: number, startId: string): Question[] => {
   return Array.from({ length: count }).map((_, i) => ({
     id: `${startId}-${i}`,
-    topicId: topic,
+    topicId: topicId,
     difficulty: diff,
-    question: `[${topic.toUpperCase()} ${diff}] Detailed DevOps Scenario ${i + 1}: How would you optimize ${topic} for a high-traffic production environment using ${diff} level techniques?`,
-    answer: `This is a comprehensive architectural answer for ${topic} at the ${diff} level. In a professional DevOps interview, you should discuss reliability, scalability, and security. For question ${i + 1}, focus on implementation details, monitoring hooks, and automated recovery strategies.`,
+    question: `Scenario: You are troubleshooting a high latency issue in a ${topicId} environment. What specific ${diff} level steps would you take to identify the root cause?`,
+    answer: `This is a comprehensive response for ${topicId} at the ${diff} level. In an interview, you should mention monitoring tools (like Prometheus or Datadog), logs (ELK/CloudWatch), and the specific architecture of ${topicId}. For question ${i+1}, focus on isolation, remediation, and preventing regression.`,
   }));
 };
 
-// FULL LINUX SET (150+ Questions)
-const linuxBasic: Question[] = [
-  { id: 'l-b-1', topicId: 'linux', difficulty: Difficulty.BASIC, question: 'What is the "root" user?', answer: 'The superuser account with full access to all commands and files.' },
-  { id: 'l-b-2', topicId: 'linux', difficulty: Difficulty.BASIC, question: 'How do you list hidden files?', answer: 'Use "ls -a".', codeSnippet: 'ls -a', language: 'bash' },
-  { id: 'l-b-3', topicId: 'linux', difficulty: Difficulty.BASIC, question: 'Command to change directory?', answer: 'The "cd" command.', codeSnippet: 'cd /var/log', language: 'bash' },
-  { id: 'l-b-4', topicId: 'linux', difficulty: Difficulty.BASIC, question: 'What is "pwd"?', answer: 'Prints the absolute path of the current working directory.' },
-  { id: 'l-b-5', topicId: 'linux', difficulty: Difficulty.BASIC, question: 'How to create a directory?', answer: 'Use "mkdir".', codeSnippet: 'mkdir my_folder', language: 'bash' },
-  { id: 'l-b-6', topicId: 'linux', difficulty: Difficulty.BASIC, question: 'How to remove a file?', answer: 'Use "rm".', codeSnippet: 'rm test.txt', language: 'bash' },
-  { id: 'l-b-7', topicId: 'linux', difficulty: Difficulty.BASIC, question: 'How to copy a file?', answer: 'Use "cp".', codeSnippet: 'cp source.txt dest.txt', language: 'bash' },
-  { id: 'l-b-8', topicId: 'linux', difficulty: Difficulty.BASIC, question: 'How to move or rename a file?', answer: 'Use "mv".', codeSnippet: 'mv old.txt new.txt', language: 'bash' },
-  { id: 'l-b-9', topicId: 'linux', difficulty: Difficulty.BASIC, question: 'How to view file content?', answer: 'Use "cat", "less", or "more".' },
-  { id: 'l-b-10', topicId: 'linux', difficulty: Difficulty.BASIC, question: 'What is "grep"?', answer: 'A command-line utility for searching plain-text data sets for lines that match a regular expression.' },
-  ...createQuestions('linux', Difficulty.BASIC, 40, 'l-b-ext')
+const linuxQuestions: Question[] = [
+  { id: 'l-b-1', topicId: 'linux', difficulty: Difficulty.BASIC, question: 'What is the purpose of the /etc/hosts file?', answer: 'It is a local lookup file used to map hostnames to IP addresses before querying DNS servers.' },
+  { id: 'l-b-2', topicId: 'linux', difficulty: Difficulty.BASIC, question: 'How do you check current memory usage?', answer: 'Use the "free -m" command to see memory in megabytes.', codeSnippet: 'free -m', language: 'bash' },
+  { id: 'l-i-1', topicId: 'linux', difficulty: Difficulty.INTERMEDIATE, question: 'Explain the difference between soft and hard limits in Linux.', answer: 'Soft limits are thresholds that generate warnings but can be temporarily exceeded; hard limits are absolute maximums enforced by the kernel.' },
+  ...generateMockQuestions('linux', Difficulty.BASIC, 18, 'l-b-ext'),
+  ...generateMockQuestions('linux', Difficulty.INTERMEDIATE, 20, 'l-i-ext'),
+  ...generateMockQuestions('linux', Difficulty.ADVANCED, 20, 'l-a-ext'),
 ];
 
-const linuxIntermediate: Question[] = [
-  { id: 'l-i-1', topicId: 'linux', difficulty: Difficulty.INTERMEDIATE, question: 'What is an "Inode"?', answer: 'A data structure describing a filesystem object (file/dir) except its name and actual data.' },
-  { id: 'l-i-2', topicId: 'linux', difficulty: Difficulty.INTERMEDIATE, question: 'Difference between Hard and Soft links?', answer: 'Hard links point to the same inode; soft links (symlinks) point to the filename path.' },
-  { id: 'l-i-3', topicId: 'linux', difficulty: Difficulty.INTERMEDIATE, question: 'What is a "Zombie Process"?', answer: 'A process that has finished execution but still has an entry in the process table.' },
-  { id: 'l-i-4', topicId: 'linux', difficulty: Difficulty.INTERMEDIATE, question: 'How to check open ports?', answer: 'Use "ss -tulpn" or "netstat -tulpn".', codeSnippet: 'ss -tulpn', language: 'bash' },
-  { id: 'l-i-5', topicId: 'linux', difficulty: Difficulty.INTERMEDIATE, question: 'What is "umask"?', answer: 'A bitmask that sets the default permissions for new files/directories.' },
-  ...createQuestions('linux', Difficulty.INTERMEDIATE, 45, 'l-i-ext')
+const dockerQuestions: Question[] = [
+  { id: 'dk-b-1', topicId: 'docker', difficulty: Difficulty.BASIC, question: 'What is a Docker image vs a Docker container?', answer: 'An image is a read-only template with instructions for creating a container; a container is a runnable instance of an image.' },
+  { id: 'dk-i-1', topicId: 'docker', difficulty: Difficulty.INTERMEDIATE, question: 'What is the purpose of multi-stage builds?', answer: 'To optimize Dockerfile complexity and keep image sizes small by only copying the necessary artifacts from one stage to the final production image.' },
+  ...generateMockQuestions('docker', Difficulty.BASIC, 19, 'dk-b-ext'),
+  ...generateMockQuestions('docker', Difficulty.INTERMEDIATE, 20, 'dk-i-ext'),
+  ...generateMockQuestions('docker', Difficulty.ADVANCED, 20, 'dk-a-ext'),
 ];
-
-const linuxAdvanced: Question[] = [
-  { id: 'l-a-1', topicId: 'linux', difficulty: Difficulty.ADVANCED, question: 'What is the "OOM Killer"?', answer: 'A kernel routine that kills processes to free memory when the system is dangerously low.' },
-  { id: 'l-a-2', topicId: 'linux', difficulty: Difficulty.ADVANCED, question: 'How do Namespaces work?', answer: 'Kernel feature that isolates system resources (PID, Net, Mount) so processes see separate environments.' },
-  { id: 'l-a-3', topicId: 'linux', difficulty: Difficulty.ADVANCED, question: 'Explain "Cgroups".', answer: 'Control Groups limit, account for, and isolate resource usage (CPU, Memory, I/O) of process groups.' },
-  { id: 'l-a-4', topicId: 'linux', difficulty: Difficulty.ADVANCED, question: 'What is "eBPF"?', answer: 'Technology allowing sandboxed programs to run in the kernel for observability and networking.' },
-  { id: 'l-a-5', topicId: 'linux', difficulty: Difficulty.ADVANCED, question: 'What happens during Context Switching?', answer: 'The CPU stops executing one process, saves state, and starts another, involving kernel overhead.' },
-  ...createQuestions('linux', Difficulty.ADVANCED, 45, 'l-a-ext')
-];
-
-// OTHERS (All 50+ Questions)
-const cloudQuestions = createQuestions('cloud', Difficulty.BASIC, 17, 'cl-b').concat(
-  createQuestions('cloud', Difficulty.INTERMEDIATE, 17, 'cl-i'),
-  createQuestions('cloud', Difficulty.ADVANCED, 16, 'cl-a')
-);
-
-const dockerQuestions = createQuestions('docker', Difficulty.BASIC, 17, 'dk-b').concat(
-  createQuestions('docker', Difficulty.INTERMEDIATE, 17, 'dk-i'),
-  createQuestions('docker', Difficulty.ADVANCED, 16, 'dk-a')
-);
-
-const ansibleQuestions = createQuestions('ansible', Difficulty.BASIC, 17, 'ans-b').concat(
-  createQuestions('ansible', Difficulty.INTERMEDIATE, 17, 'ans-i'),
-  createQuestions('ansible', Difficulty.ADVANCED, 16, 'ans-a')
-);
-
-const terraformQuestions = createQuestions('terraform', Difficulty.BASIC, 17, 'tf-b').concat(
-  createQuestions('terraform', Difficulty.INTERMEDIATE, 17, 'tf-i'),
-  createQuestions('terraform', Difficulty.ADVANCED, 16, 'tf-a')
-);
-
-const jenkinsQuestions = createQuestions('jenkins', Difficulty.BASIC, 17, 'jk-b').concat(
-  createQuestions('jenkins', Difficulty.INTERMEDIATE, 17, 'jk-i'),
-  createQuestions('jenkins', Difficulty.ADVANCED, 16, 'jk-a')
-);
-
-const devopsQuestions = createQuestions('devops', Difficulty.BASIC, 17, 'do-b').concat(
-  createQuestions('devops', Difficulty.INTERMEDIATE, 17, 'do-i'),
-  createQuestions('devops', Difficulty.ADVANCED, 16, 'do-a')
-);
-
-const sreQuestions = createQuestions('sre', Difficulty.BASIC, 17, 'sr-b').concat(
-  createQuestions('sre', Difficulty.INTERMEDIATE, 17, 'sr-i'),
-  createQuestions('sre', Difficulty.ADVANCED, 16, 'sr-a')
-);
-
-const pythonQuestions = createQuestions('python', Difficulty.BASIC, 17, 'py-b').concat(
-  createQuestions('python', Difficulty.INTERMEDIATE, 17, 'py-i'),
-  createQuestions('python', Difficulty.ADVANCED, 16, 'py-a')
-);
 
 export const INITIAL_QUESTIONS: Question[] = [
-  ...linuxBasic,
-  ...linuxIntermediate,
-  ...linuxAdvanced,
-  ...cloudQuestions,
+  ...linuxQuestions,
   ...dockerQuestions,
-  ...ansibleQuestions,
-  ...terraformQuestions,
-  ...jenkinsQuestions,
-  ...devopsQuestions,
-  ...sreQuestions,
-  ...pythonQuestions,
+  ...generateMockQuestions('cloud', Difficulty.BASIC, 17, 'cl-b'),
+  ...generateMockQuestions('cloud', Difficulty.INTERMEDIATE, 17, 'cl-i'),
+  ...generateMockQuestions('cloud', Difficulty.ADVANCED, 16, 'cl-a'),
+  ...generateMockQuestions('ansible', Difficulty.BASIC, 17, 'ans-b'),
+  ...generateMockQuestions('ansible', Difficulty.INTERMEDIATE, 17, 'ans-i'),
+  ...generateMockQuestions('ansible', Difficulty.ADVANCED, 16, 'ans-a'),
+  ...generateMockQuestions('terraform', Difficulty.BASIC, 17, 'tf-b'),
+  ...generateMockQuestions('terraform', Difficulty.INTERMEDIATE, 17, 'tf-i'),
+  ...generateMockQuestions('terraform', Difficulty.ADVANCED, 16, 'tf-a'),
+  ...generateMockQuestions('jenkins', Difficulty.BASIC, 17, 'jk-b'),
+  ...generateMockQuestions('jenkins', Difficulty.INTERMEDIATE, 17, 'jk-i'),
+  ...generateMockQuestions('jenkins', Difficulty.ADVANCED, 16, 'jk-a'),
+  ...generateMockQuestions('devops', Difficulty.BASIC, 17, 'do-b'),
+  ...generateMockQuestions('devops', Difficulty.INTERMEDIATE, 17, 'do-i'),
+  ...generateMockQuestions('devops', Difficulty.ADVANCED, 16, 'do-a'),
+  ...generateMockQuestions('sre', Difficulty.BASIC, 17, 'sr-b'),
+  ...generateMockQuestions('sre', Difficulty.INTERMEDIATE, 17, 'sr-i'),
+  ...generateMockQuestions('sre', Difficulty.ADVANCED, 16, 'sr-a'),
+  ...generateMockQuestions('python', Difficulty.BASIC, 17, 'py-b'),
+  ...generateMockQuestions('python', Difficulty.INTERMEDIATE, 17, 'py-i'),
+  ...generateMockQuestions('python', Difficulty.ADVANCED, 16, 'py-a'),
 ];

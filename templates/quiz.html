@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+{% block content %}
+<div x-data="quizData" x-init="init()" class="max-w-3xl mx-auto" x-cloak>
+    <div class="flex items-center justify-between mb-8">
+        <a href="/topic/{{ topic.id_str }}/" class="text-slate-400 hover:text-white transition-colors">← Back to Levels</a>
+        <div class="text-right">
+            <div class="text-xs font-bold uppercase text-emerald-500 mb-1">{{ topic.name }} • {{ level }}</div>
+            <div class="text-slate-500 text-sm" x-text="'Question ' + (currentIndex + 1) + ' of ' + questions.length"></div>
+        </div>
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="w-full h-1 bg-slate-800 rounded-full mb-8 overflow-hidden">
+        <div class="h-full bg-emerald-500 transition-all duration-300" :style="'width: ' + ((currentIndex + 1)/questions.length*100) + '%'"></div>
+    </div>
+
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl p-8 mb-6 shadow-xl">
+        <div class="min-h-[120px]">
+            <h2 class="text-2xl font-bold leading-tight mb-6" x-text="currentQuestion().text"></h2>
+            
+            <template x-if="currentQuestion().code_snippet">
+                <div class="mb-6 rounded-xl bg-slate-950 border border-slate-800 p-4 font-mono text-sm text-emerald-400 overflow-x-auto">
+                    <pre><code x-text="currentQuestion().code_snippet"></code></pre>
+                </div>
+            </template>
+        </div>
+
+        <div class="space-y-4">
+            <button x-show="!showAnswer" @click="showAnswer = true" class="w-full py-4 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-2xl transition-all">
+                Show Expert Answer
+            </button>
+
+            <div x-show="showAnswer" class="space-y-6">
+                <div class="bg-slate-800/50 rounded-2xl p-6 border border-slate-700/50">
+                    <h4 class="text-xs font-bold text-slate-400 mb-3 uppercase tracking-widest">Suggested Answer</h4>
+                    <p class="text-slate-200 leading-relaxed" x-text="currentQuestion().answer"></p>
+                    
+                    <div class="mt-6 flex gap-3">
+                        <button @click="getAIExplanation()" :disabled="loadingAI" class="flex-1 py-3 bg-indigo-600/10 border border-indigo-500/30 text-indigo-400 rounded-xl hover:bg-indigo-600/20 transition-all disabled:opacity-50">
+                            <span x-show="!loadingAI">Explain with AI ✨</span>
+                            <span x-show="loadingAI">Thinking...</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div x-show="aiExplanation" class="bg-slate-800/20 border border-slate-700/30 rounded-2xl p-6 text-sm text-slate-300 leading-relaxed" x-html="aiExplanation"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="flex items-center justify-between gap-4">
+        <button @click="prev()" :disabled="currentIndex === 0" class="px-6 py-3 bg-slate-900 border border-slate-800 rounded-2xl text-slate-300 hover:bg-slate-800 disabled:opacity-30">Previous</button>
+        <button @click="next()" :disabled="currentIndex === questions.length - 1" class="px-6 py-3 bg-slate-900 border border-slate-800 rounded-2xl text-slate-300 hover:bg-slate-800 disabled:opacity-30">Next</button>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('quizData', () => ({
+            questions: JSON.parse('{{ questions_json|safe }}'),
+            currentIndex: 0,
+            showAnswer: false,
+            aiExplanation: '',
+            loadingAI: false,
+
+            currentQuestion() {
+                return this.questions[this.currentIndex];
+            },
+
+            next() {
+                if (this.currentIndex < this.questions.length - 1) {
+                    this.currentIndex++;
+                    this.resetState();
+                }
+            },
+
+            prev() {
+                if (this.currentIndex > 0) {
+                    this.currentIndex--;
+                    this.resetState();
+                }
+            },
+
+            resetState() {
+                this.showAnswer = false;
+                this.aiExplanation = '';
+                this.loadingAI = false;
+            },
+
+            async getAIExplanation() {
+                this.loadingAI = true;
+                try {
+                    const response = await fetch('/api/explain/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        },
+                        body: JSON.stringify({
+                            topic: '{{ topic.name }}',
+                            question: this.currentQuestion().text,
+                            answer: this.currentQuestion().answer
+                        })
+                    });
+                    const data = await response.json();
+                    this.aiExplanation = data.explanation.replace(/\n/g, '<br/>');
+                } catch (e) {
+                    this.aiExplanation = 'Could not reach AI services.';
+                } finally {
+                    this.loadingAI = false;
+                }
+            }
+        }))
+    })
+</script>
+{% endblock %}
