@@ -3,7 +3,12 @@ import json
 from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
 from .models import Topic, Question
-from google.generativeai import GoogleGenAI
+import google.generativeai as genai
+
+# Setup Gemini with the environment key
+api_key = os.environ.get("API_KEY")
+if api_key:
+    genai.configure(api_key=api_key)
 
 def dashboard(request):
     topics = Topic.objects.all()
@@ -24,7 +29,18 @@ def topic_detail(request, topic_id):
 
 def quiz_view(request, topic_id, level):
     topic = get_object_or_404(Topic, id_str=topic_id)
-    questions = list(Question.objects.filter(topic=topic, difficulty=level).values())
+    # Convert queryset to list of dicts for JSON serialization in the template
+    qs = Question.objects.filter(topic=topic, difficulty=level)
+    questions = []
+    for q in qs:
+        questions.append({
+            'id': q.id,
+            'text': q.text,
+            'answer': q.answer,
+            'code_snippet': q.code_snippet or '',
+            'language': q.language
+        })
+    
     return render(request, 'quiz.html', {
         'topic': topic,
         'level': level,
@@ -39,25 +55,28 @@ def ai_explanation(request):
             question_text = data.get('question')
             answer_text = data.get('answer')
             
-            # Guidelines: Initialize GoogleGenAI right before use with process.env.API_KEY
-            ai = GoogleGenAI({apiKey: os.environ.get("API_KEY")})
+            # Select appropriate model for text tasks
+            model = genai.GenerativeModel('gemini-3-flash-preview')
             
-            prompt = f"""You are a senior DevOps SRE. Explain this interview concept in detail but simply for a candidate. 
+            prompt = f"""You are a senior DevOps SRE interviewer. 
+            Provide a detailed but clear explanation for this concept.
+            
             Topic: {topic_name}
             Question: {question_text}
-            Short Answer: {answer_text}
+            Candidate Answer: {answer_text}
             
-            Please provide:
-            1. A deeper explanation of the underlying concepts.
-            2. A real-world scenario where this knowledge is applied.
-            3. A follow-up tip for the interview.
-            Keep it structured with markdown."""
+            Format your response in Markdown with:
+            ### 🔍 Deep Dive
+            (A thorough explanation of the technical concept)
+            
+            ### 🏗️ Real-World Scenario
+            (An example of how this is applied in a production infrastructure)
+            
+            ### 💡 Interview Pro-Tip
+            (A specific tip to impress the interviewer when answering this question)
+            """
 
-            response = ai.models.generateContent({
-                model: 'gemini-3-flash-preview',
-                contents: prompt
-            })
-            
+            response = model.generate_content(prompt)
             return JsonResponse({'explanation': response.text})
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)

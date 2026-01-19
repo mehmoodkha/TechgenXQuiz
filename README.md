@@ -1,50 +1,44 @@
-# DevOps Mastery Hub - Linux Setup Guide
+# DevOps Mastery Hub - Local Deployment Guide
 
-This guide will help you get the application running on a fresh Linux installation.
+Follow these steps to get the full-stack AI-powered application running on your local machine.
 
-## 1. System Preparation
-First, update your package manager and install Python 3 and the Virtual Environment tool.
+## 1. Prerequisites
+- **Python 3.10+**
+- **Gemini API Key** from [Google AI Studio](https://aistudio.google.com/)
+
+## 2. Installation
+
+### Create Virtual Environment
 ```bash
-sudo apt update
-sudo apt install python3 python3-pip python3-venv -y
+python -m venv venv
 ```
 
-## 2. Project Setup
-Clone your code to the desired directory, then navigate into it:
-```bash
-# Assuming you are in the project root
-python3 -m venv venv
-source venv/bin/activate
-```
+### Activate Environment
+- **Windows:** `venv\Scripts\activate`
+- **Mac/Linux:** `source venv/bin/activate`
 
-## 3. Install Dependencies
+### Install Dependencies
 ```bash
 pip install -r requirements.txt
 ```
 
-## 4. Initialize Database
-Run migrations to create the tables and use the provided seed script to populate the initial content.
+## 3. Configuration
+Set your Gemini API Key as an environment variable:
+- **Windows (CMD):** `set API_KEY=your_api_key`
+- **Mac/Linux:** `export API_KEY='your_api_key'`
+
+## 4. Database Setup
+Initialize the SQLite database and seed the DevOps questions:
 ```bash
-python3 manage.py migrate
-python3 seed_db.py
+python manage.py migrate
+python seed_db.py
 ```
 
-## 5. Environment Configuration
-You must provide your Gemini API key. You can get one from [Google AI Studio](https://aistudio.google.com/app/apikey).
+## 5. Run the Application
 ```bash
-export API_KEY='your_actual_api_key_here'
+python manage.py runserver
 ```
-
-## 6. Launch
-Start the development server:
-```bash
-python3 manage.py runserver 0.0.0.0:8000
-```
-Visit `http://your-server-ip:8000` in your browser.
+Visit `http://127.0.0.1:8000` in your browser.
 
 ---
-
-### Project Structure
-- `core/`: Django app containing models and views.
-- `templates/`: HTML templates using Tailwind CSS and Alpine.js.
-- `seed_db.py`: One-time script to populate the database questions.
+**Note:** This application uses Django for the backend, Alpine.js for the frontend, and Tailwind CSS for styling. No Node.js is required.
