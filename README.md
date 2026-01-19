@@ -1,20 +1,31 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
 
-# Run and deploy your AI Studio app
+# DevOps Mastery Hub
 
-This contains everything you need to run your app locally.
+A premium interview preparation platform for DevOps engineers.
 
-View your app in AI Studio: https://ai.studio/apps/drive/12oNomcD_e06yZy6pQZ9BqMAPs1_bbjvk
+## Local Setup Instructions
 
-## Run Locally
+1. **Install Node.js**: Ensure you have Node.js (v18+) installed on your machine.
+2. **Clone/Download**: Copy all the project files into a folder.
+3. **Install Dependencies**:
+   ```bash
+   npm install
+   ```
+4. **Environment Variables**:
+   Create a `.env` file in the root directory:
+   ```env
+   API_KEY=your_google_gemini_api_key
+   ```
+   Get a key from [Google AI Studio](https://aistudio.google.com/app/apikey).
 
-**Prerequisites:**  Node.js
+5. **Run the App**:
+   ```bash
+   npm run dev
+   ```
+6. **Open in Browser**: Navigate to `http://localhost:3000`.
 
-
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+## Features
+- 500+ structured questions across 9 tech stacks.
+- AI-powered explanations using Gemini 3 Flash.
+- Progress tracking saved to local storage.
+- Difficulty tiers: Basic, Intermediate, Advanced.

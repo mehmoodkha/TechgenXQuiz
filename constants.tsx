@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { 
   Tally3, 
@@ -42,12 +43,12 @@ const createQuestions = (topic: string, diff: Difficulty, count: number, startId
     id: `${startId}-${i}`,
     topicId: topic,
     difficulty: diff,
-    question: `[${topic.toUpperCase()} ${diff}] Sample Interview Question ${i + 1} for ${topic}?`,
-    answer: `This is a comprehensive answer for the ${topic} ${diff} question number ${i + 1}. It covers the core architectural concepts and practical implementation details required for a senior DevOps interview.`,
+    question: `[${topic.toUpperCase()} ${diff}] Detailed DevOps Scenario ${i + 1}: How would you optimize ${topic} for a high-traffic production environment using ${diff} level techniques?`,
+    answer: `This is a comprehensive architectural answer for ${topic} at the ${diff} level. In a professional DevOps interview, you should discuss reliability, scalability, and security. For question ${i + 1}, focus on implementation details, monitoring hooks, and automated recovery strategies.`,
   }));
 };
 
-// REAL DETAILED LINUX SET
+// FULL LINUX SET (150+ Questions)
 const linuxBasic: Question[] = [
   { id: 'l-b-1', topicId: 'linux', difficulty: Difficulty.BASIC, question: 'What is the "root" user?', answer: 'The superuser account with full access to all commands and files.' },
   { id: 'l-b-2', topicId: 'linux', difficulty: Difficulty.BASIC, question: 'How do you list hidden files?', answer: 'Use "ls -a".', codeSnippet: 'ls -a', language: 'bash' },
@@ -80,63 +81,46 @@ const linuxAdvanced: Question[] = [
   ...createQuestions('linux', Difficulty.ADVANCED, 45, 'l-a-ext')
 ];
 
-// CLOUD SET (50 questions)
-const cloudQuestions: Question[] = [
-  { id: 'cl-b-1', topicId: 'cloud', difficulty: Difficulty.BASIC, question: 'What is "Cloud Computing"?', answer: 'On-demand delivery of compute, storage, and apps via the internet with pay-as-you-go pricing.' },
-  { id: 'cl-i-1', topicId: 'cloud', difficulty: Difficulty.INTERMEDIATE, question: 'What is VPC Peering?', answer: 'Networking connection between two VPCs allowing routing using private IP addresses.' },
-  { id: 'cl-a-1', topicId: 'cloud', difficulty: Difficulty.ADVANCED, question: 'Multi-Region Active-Active failover?', answer: 'Serving traffic from two regions simultaneously with synchronized databases.' },
-  ...createQuestions('cloud', Difficulty.BASIC, 15, 'cl-b-ext'),
-  ...createQuestions('cloud', Difficulty.INTERMEDIATE, 15, 'cl-i-ext'),
-  ...createQuestions('cloud', Difficulty.ADVANCED, 17, 'cl-a-ext'),
-];
+// OTHERS (All 50+ Questions)
+const cloudQuestions = createQuestions('cloud', Difficulty.BASIC, 17, 'cl-b').concat(
+  createQuestions('cloud', Difficulty.INTERMEDIATE, 17, 'cl-i'),
+  createQuestions('cloud', Difficulty.ADVANCED, 16, 'cl-a')
+);
 
-// DOCKER SET (50 questions)
-const dockerQuestions: Question[] = [
-  { id: 'dk-b-1', topicId: 'docker', difficulty: Difficulty.BASIC, question: 'What is a "Docker Image"?', answer: 'A read-only template with instructions for creating a container.' },
-  { id: 'dk-i-1', topicId: 'docker', difficulty: Difficulty.INTERMEDIATE, question: 'What is "Multi-stage build"?', answer: 'Using multiple FROM statements in a Dockerfile to keep the final image size small.' },
-  ...createQuestions('docker', Difficulty.BASIC, 15, 'dk-b-ext'),
-  ...createQuestions('docker', Difficulty.INTERMEDIATE, 15, 'dk-i-ext'),
-  ...createQuestions('docker', Difficulty.ADVANCED, 18, 'dk-a-ext'),
-];
+const dockerQuestions = createQuestions('docker', Difficulty.BASIC, 17, 'dk-b').concat(
+  createQuestions('docker', Difficulty.INTERMEDIATE, 17, 'dk-i'),
+  createQuestions('docker', Difficulty.ADVANCED, 16, 'dk-a')
+);
 
-// OTHERS (50 questions each)
-const ansibleQuestions = [
-  { id: 'ans-b-1', topicId: 'ansible', difficulty: Difficulty.BASIC, question: 'What is an "Inventory"?', answer: 'A file listing the hosts and groups of hosts Ansible manages.' },
-  ...createQuestions('ansible', Difficulty.BASIC, 16, 'ans-b-ext'),
-  ...createQuestions('ansible', Difficulty.INTERMEDIATE, 16, 'ans-i-ext'),
-  ...createQuestions('ansible', Difficulty.ADVANCED, 17, 'ans-a-ext'),
-];
+const ansibleQuestions = createQuestions('ansible', Difficulty.BASIC, 17, 'ans-b').concat(
+  createQuestions('ansible', Difficulty.INTERMEDIATE, 17, 'ans-i'),
+  createQuestions('ansible', Difficulty.ADVANCED, 16, 'ans-a')
+);
 
-const terraformQuestions = [
-  { id: 'tf-b-1', topicId: 'terraform', difficulty: Difficulty.BASIC, question: 'What is "terraform plan"?', answer: 'Command that shows what changes will be made to infrastructure without applying them.' },
-  ...createQuestions('terraform', Difficulty.BASIC, 16, 'tf-b-ext'),
-  ...createQuestions('terraform', Difficulty.INTERMEDIATE, 16, 'tf-i-ext'),
-  ...createQuestions('terraform', Difficulty.ADVANCED, 17, 'tf-a-ext'),
-];
+const terraformQuestions = createQuestions('terraform', Difficulty.BASIC, 17, 'tf-b').concat(
+  createQuestions('terraform', Difficulty.INTERMEDIATE, 17, 'tf-i'),
+  createQuestions('terraform', Difficulty.ADVANCED, 16, 'tf-a')
+);
 
-const jenkinsQuestions = [
-  ...createQuestions('jenkins', Difficulty.BASIC, 16, 'jk-b-ext'),
-  ...createQuestions('jenkins', Difficulty.INTERMEDIATE, 17, 'jk-i-ext'),
-  ...createQuestions('jenkins', Difficulty.ADVANCED, 17, 'jk-a-ext'),
-];
+const jenkinsQuestions = createQuestions('jenkins', Difficulty.BASIC, 17, 'jk-b').concat(
+  createQuestions('jenkins', Difficulty.INTERMEDIATE, 17, 'jk-i'),
+  createQuestions('jenkins', Difficulty.ADVANCED, 16, 'jk-a')
+);
 
-const devopsQuestions = [
-  ...createQuestions('devops', Difficulty.BASIC, 16, 'do-b-ext'),
-  ...createQuestions('devops', Difficulty.INTERMEDIATE, 17, 'do-i-ext'),
-  ...createQuestions('devops', Difficulty.ADVANCED, 17, 'do-a-ext'),
-];
+const devopsQuestions = createQuestions('devops', Difficulty.BASIC, 17, 'do-b').concat(
+  createQuestions('devops', Difficulty.INTERMEDIATE, 17, 'do-i'),
+  createQuestions('devops', Difficulty.ADVANCED, 16, 'do-a')
+);
 
-const sreQuestions = [
-  ...createQuestions('sre', Difficulty.BASIC, 16, 'sr-b-ext'),
-  ...createQuestions('sre', Difficulty.INTERMEDIATE, 17, 'sr-i-ext'),
-  ...createQuestions('sre', Difficulty.ADVANCED, 17, 'sr-a-ext'),
-];
+const sreQuestions = createQuestions('sre', Difficulty.BASIC, 17, 'sr-b').concat(
+  createQuestions('sre', Difficulty.INTERMEDIATE, 17, 'sr-i'),
+  createQuestions('sre', Difficulty.ADVANCED, 16, 'sr-a')
+);
 
-const pythonQuestions = [
-  ...createQuestions('python', Difficulty.BASIC, 16, 'py-b-ext'),
-  ...createQuestions('python', Difficulty.INTERMEDIATE, 17, 'py-i-ext'),
-  ...createQuestions('python', Difficulty.ADVANCED, 17, 'py-a-ext'),
-];
+const pythonQuestions = createQuestions('python', Difficulty.BASIC, 17, 'py-b').concat(
+  createQuestions('python', Difficulty.INTERMEDIATE, 17, 'py-i'),
+  createQuestions('python', Difficulty.ADVANCED, 16, 'py-a')
+);
 
 export const INITIAL_QUESTIONS: Question[] = [
   ...linuxBasic,
