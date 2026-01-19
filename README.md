@@ -1,31 +1,50 @@
+# DevOps Mastery Hub - Linux Setup Guide
 
-# DevOps Mastery Hub
+This guide will help you get the application running on a fresh Linux installation.
 
-A premium interview preparation platform for DevOps engineers.
+## 1. System Preparation
+First, update your package manager and install Python 3 and the Virtual Environment tool.
+```bash
+sudo apt update
+sudo apt install python3 python3-pip python3-venv -y
+```
 
-## Local Setup Instructions
+## 2. Project Setup
+Clone your code to the desired directory, then navigate into it:
+```bash
+# Assuming you are in the project root
+python3 -m venv venv
+source venv/bin/activate
+```
 
-1. **Install Node.js**: Ensure you have Node.js (v18+) installed on your machine.
-2. **Clone/Download**: Copy all the project files into a folder.
-3. **Install Dependencies**:
-   ```bash
-   npm install
-   ```
-4. **Environment Variables**:
-   Create a `.env` file in the root directory:
-   ```env
-   API_KEY=your_google_gemini_api_key
-   ```
-   Get a key from [Google AI Studio](https://aistudio.google.com/app/apikey).
+## 3. Install Dependencies
+```bash
+pip install -r requirements.txt
+```
 
-5. **Run the App**:
-   ```bash
-   npm run dev
-   ```
-6. **Open in Browser**: Navigate to `http://localhost:3000`.
+## 4. Initialize Database
+Run migrations to create the tables and use the provided seed script to populate the initial content.
+```bash
+python3 manage.py migrate
+python3 seed_db.py
+```
 
-## Features
-- 500+ structured questions across 9 tech stacks.
-- AI-powered explanations using Gemini 3 Flash.
-- Progress tracking saved to local storage.
-- Difficulty tiers: Basic, Intermediate, Advanced.
+## 5. Environment Configuration
+You must provide your Gemini API key. You can get one from [Google AI Studio](https://aistudio.google.com/app/apikey).
+```bash
+export API_KEY='your_actual_api_key_here'
+```
+
+## 6. Launch
+Start the development server:
+```bash
+python3 manage.py runserver 0.0.0.0:8000
+```
+Visit `http://your-server-ip:8000` in your browser.
+
+---
+
+### Project Structure
+- `core/`: Django app containing models and views.
+- `templates/`: HTML templates using Tailwind CSS and Alpine.js.
+- `seed_db.py`: One-time script to populate the database questions.
